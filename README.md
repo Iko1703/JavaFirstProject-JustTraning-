@@ -1,1 +1,1 @@
-First project on java
+First project on java (Little calculator)
