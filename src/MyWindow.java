@@ -1,7 +1,9 @@
-import javax.swing.*;
+import com.sun.jdi.IntegerType;
 import java.awt.*;
 import java.awt.event.*;
-import jdk.jshell.EvalException;
+import java.util.ArrayList;
+import java.util.function.IntBinaryOperator;
+import javax.swing.*;
 import org.w3c.dom.events.EventException;
 
 public class MyWindow extends JFrame implements ActionListener {
@@ -143,13 +145,21 @@ public class MyWindow extends JFrame implements ActionListener {
             case "enter": 
             try
             {
-                String result = String.valueOf(LogicCalculator(windowOut.getText())) ;
-                windowOut.setText(result);
+                double getres = LogicCalculator(windowOut.getText());
+                String result = String.valueOf(getres) ;
+                if (getres % 1 == 0)
+                {
+                    windowOut.setText(" " + String.format("%.0f",getres));
+                }
+                else{
+                    windowOut.setText(" " + result);
+                }
+                
             }
             catch (EventException ex)
             {
                 JOptionPane.showMessageDialog(this, "придурок? подумай головой, а не бред всякий пиши!");
-                windowOut.setText("");
+                windowOut.setText(" ");
             }
             break;        
             default:
@@ -159,46 +169,86 @@ public class MyWindow extends JFrame implements ActionListener {
         }
     }
 
+    public static boolean isNumeric(String str) {
+        return str.matches("-?\\d+(\\.\\d+)?");
+      }
+
     private double LogicCalculator (String str)
     {
         double result = 0;
         String[] splitStr = str.split(" ");
-        for (int i = 0; i < splitStr.length; i++)
+
+        ArrayList<String> digit = new ArrayList<String>();
+        ArrayList<String> operand = new ArrayList<String>();
+
+        String nowStr = "";
+
+        for (int i = 1; i< splitStr.length;i++)
         {
-            switch (splitStr[i]) {
-                case "+":
-                    result += FindCount(splitStr, nowPos) + FindCount(splitStr, i + 1);
-                    
-                    break;
-                case "-":
-                    result += FindCount(splitStr, nowPos) - FindCount(splitStr, i + 1);
-                    break;
-                case "*":
-                    result += FindCount(splitStr, nowPos) * FindCount(splitStr, i + 1);
-                    break;
-                case ":":
-                    result += FindCount(splitStr, nowPos) / FindCount(splitStr, i + 1);
-                    break;
+            System.out.println(splitStr[i]);
+            if (isNumeric(splitStr[i]))
+            {
+                nowStr +=splitStr[i];
+            }
+            else
+            {
+                
+                digit.add(nowStr);
+                nowStr="";
+                operand.add(splitStr[i]);
             }
         }
-        nowPos = 0;
-        return result;
+        digit.add(nowStr);
+
+        String nowStep = "";
+        System.out.println(operand);
+        System.out.println(digit);
+        int pos = 0;
+        while (pos<operand.size()) 
+        {
+            if (operand.get(pos).equals(":") || operand.get(pos).equals("*"))
+                {
+                    nowStep = Operation(digit.get(pos),digit.get(pos+1),operand.get(pos));
+                    digit.remove(pos);
+                    digit.remove(pos);
+                    digit.add(pos,nowStep);
+                    operand.remove(pos);
+                    nowStep = null;
+                }
+            pos++;
+        }
+        while (!operand.isEmpty()) 
+        {
+                    nowStep = Operation(digit.get(0),digit.get(1),operand.get(0));
+                    digit.remove(0);
+                    digit.remove(0);
+                    digit.add(0,nowStep);
+                    operand.remove(0);
+                    nowStep = null;
+        }
+        System.out.println(operand);
+        System.out.println(digit);
+        return Double.parseDouble(digit.get(0));
     }
 
-    private double FindCount (String[] arr, int pos)
+    private String Operation (String first, String second, String operator)
     {
-        String count = "";
-            while (pos != arr.length)
-            {
-                if (arr[pos].equals("+")|| arr[pos].equals("-") || arr[pos].equals(":") || arr[pos].equals("*"))
-                {
-                    break;
-                }
-                count += arr[pos];
-                pos++;
-            }
-        nowPos = pos - 1;   
-        return Double.parseDouble(count);
+        double result  = 0;
+        switch (operator) {
+            case "+":
+                result = Double.parseDouble(first) + Double.parseDouble(second);
+            break;
+            case "-":
+                result = Double.parseDouble(first) - Double.parseDouble(second);
+            break;
+            case "*":
+                result = Double.parseDouble(first) * Double.parseDouble(second);
+            break;
+            case ":":
+                result = Double.parseDouble(first) / Double.parseDouble(second);
+            break;
+        }
+        return String.valueOf(result);
     }
 
     public static void main(String[] args) {
