@@ -22,6 +22,7 @@ public class MyWindow extends JFrame implements ActionListener {
     private JButton button8;
     private JButton button9;
     private JLabel windowOut;
+    private int nowPos = 0;
 
     public MyWindow() {
         super(" Че зыришь? ");
@@ -142,7 +143,7 @@ public class MyWindow extends JFrame implements ActionListener {
             case "enter": 
             try
             {
-                String result = String.valueOf(LogicCalculator(buttonText)) ;
+                String result = String.valueOf(LogicCalculator(windowOut.getText())) ;
                 windowOut.setText(result);
             }
             catch (EventException ex)
@@ -161,8 +162,43 @@ public class MyWindow extends JFrame implements ActionListener {
     private double LogicCalculator (String str)
     {
         double result = 0;
-        
+        String[] splitStr = str.split(" ");
+        for (int i = 0; i < splitStr.length; i++)
+        {
+            switch (splitStr[i]) {
+                case "+":
+                    result += FindCount(splitStr, nowPos) + FindCount(splitStr, i + 1);
+                    
+                    break;
+                case "-":
+                    result += FindCount(splitStr, nowPos) - FindCount(splitStr, i + 1);
+                    break;
+                case "*":
+                    result += FindCount(splitStr, nowPos) * FindCount(splitStr, i + 1);
+                    break;
+                case ":":
+                    result += FindCount(splitStr, nowPos) / FindCount(splitStr, i + 1);
+                    break;
+            }
+        }
+        nowPos = 0;
         return result;
+    }
+
+    private double FindCount (String[] arr, int pos)
+    {
+        String count = "";
+            while (pos != arr.length)
+            {
+                if (arr[pos].equals("+")|| arr[pos].equals("-") || arr[pos].equals(":") || arr[pos].equals("*"))
+                {
+                    break;
+                }
+                count += arr[pos];
+                pos++;
+            }
+        nowPos = pos - 1;   
+        return Double.parseDouble(count);
     }
 
     public static void main(String[] args) {
